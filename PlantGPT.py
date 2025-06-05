@@ -279,6 +279,8 @@ class SettingsWindow(ctk.CTkToplevel):
         self.methodologies_dir = methodologies_dir
         self.load_methodologies_callback = load_methodologies_callback
 
+        self.download_progress_var = ctk.StringVar(value="")
+
         frame = ctk.CTkFrame(self)
         frame.pack(padx=10, pady=10, fill="both", expand=True)
 
@@ -290,40 +292,44 @@ class SettingsWindow(ctk.CTkToplevel):
         ctk.CTkButton(frame, text="Выбрать...", command=self.choose_jar).grid(row=0, column=2, padx=5)
         ctk.CTkButton(frame, text="Скачать plantuml.jar", command=self.download_plantuml).grid(row=0, column=3, padx=5)
 
+        # Download progress label
+        self.download_progress_label = ctk.CTkLabel(frame, textvariable=self.download_progress_var, text_color="blue")
+        self.download_progress_label.grid(row=1, column=0, columnspan=4, sticky="w", pady=(0,10))
+
         # Output dir
-        ctk.CTkLabel(frame, text="Папка вывода:").grid(row=1, column=0, sticky="w", pady=10)
+        ctk.CTkLabel(frame, text="Папка вывода:").grid(row=2, column=0, sticky="w", pady=10)
         self.dir_var = ctk.StringVar(value=self.config_data.get("output_dir", str(IMAGES_DIR)))
         self.dir_entry = ctk.CTkEntry(frame, textvariable=self.dir_var, width=400)
-        self.dir_entry.grid(row=1, column=1, sticky="ew", padx=5, pady=10)
-        ctk.CTkButton(frame, text="Выбрать...", command=self.choose_dir).grid(row=1, column=2, padx=5, pady=10)
+        self.dir_entry.grid(row=2, column=1, sticky="ew", padx=5, pady=10)
+        ctk.CTkButton(frame, text="Выбрать...", command=self.choose_dir).grid(row=2, column=2, padx=5, pady=10)
 
         # Improve prompt checkbox
         self.improve_prompt_var = ctk.BooleanVar(value=self.config_data.get("improve_prompt", False))
         self.improve_cb = ctk.CTkCheckBox(frame, text="Улучшить промт", variable=self.improve_prompt_var)
-        self.improve_cb.grid(row=2, column=0, columnspan=4, sticky="w")
+        self.improve_cb.grid(row=3, column=0, columnspan=4, sticky="w")
 
         # Max retries
-        ctk.CTkLabel(frame, text="Макс. попыток генерации схемы:").grid(row=3, column=0, sticky="w", pady=10)
+        ctk.CTkLabel(frame, text="Макс. попыток генерации схемы:").grid(row=4, column=0, sticky="w", pady=10)
         self.max_retries_var = ctk.StringVar(value=str(self.config_data.get("max_retries", 5)))
         self.max_retries_entry = ctk.CTkEntry(frame, textvariable=self.max_retries_var, width=60)
-        self.max_retries_entry.grid(row=3, column=1, sticky="w", padx=5, pady=10)
+        self.max_retries_entry.grid(row=4, column=1, sticky="w", padx=5, pady=10)
 
         # Prompt improvements inputs
-        ctk.CTkLabel(frame, text="Промт для улучшения (часть 1):").grid(row=4, column=0, sticky="nw", pady=(20,5))
+        ctk.CTkLabel(frame, text="Промт для улучшения (часть 1):").grid(row=5, column=0, sticky="nw", pady=(20,5))
         self.prompt_improve_1 = ctk.CTkTextbox(frame, height=80)
-        self.prompt_improve_1.grid(row=4, column=1, columnspan=3, sticky="ew", pady=(20,5), padx=(0,10))
+        self.prompt_improve_1.grid(row=5, column=1, columnspan=3, sticky="ew", pady=(20,5), padx=(0,10))
         self.prompt_improve_1.insert("0.0", self.config_data.get("prompt_improve_1", ""))
         bind_ctrl_v(self.prompt_improve_1)
 
-        ctk.CTkLabel(frame, text="Промт для улучшения (часть 2):").grid(row=5, column=0, sticky="nw", pady=5)
+        ctk.CTkLabel(frame, text="Промт для улучшения (часть 2):").grid(row=6, column=0, sticky="nw", pady=5)
         self.prompt_improve_2 = ctk.CTkTextbox(frame, height=80)
-        self.prompt_improve_2.grid(row=5, column=1, columnspan=3, sticky="ew", pady=5, padx=(0,10))
+        self.prompt_improve_2.grid(row=6, column=1, columnspan=3, sticky="ew", pady=5, padx=(0,10))
         self.prompt_improve_2.insert("0.0", self.config_data.get("prompt_improve_2", ""))
         bind_ctrl_v(self.prompt_improve_2)
 
         # Buttons for methodology management and folder cleaning
         btn_meth_frame = ctk.CTkFrame(frame)
-        btn_meth_frame.grid(row=6, column=0, columnspan=4, pady=10, sticky="ew")
+        btn_meth_frame.grid(row=7, column=0, columnspan=4, pady=10, sticky="ew")
         ctk.CTkButton(btn_meth_frame, text="Добавить методологию", command=self.open_methodology_editor).pack(side="left", padx=10)
         ctk.CTkButton(btn_meth_frame, text="Удалить методологии", command=self.open_methodology_delete).pack(side="left", padx=10)
         ctk.CTkButton(btn_meth_frame, text="Очистить папку с изображениями", command=self.clear_images).pack(side="left", padx=10)
@@ -331,7 +337,7 @@ class SettingsWindow(ctk.CTkToplevel):
 
         # Save/Cancel buttons
         btn_frame = ctk.CTkFrame(frame)
-        btn_frame.grid(row=7, column=0, columnspan=4, pady=20)
+        btn_frame.grid(row=8, column=0, columnspan=4, pady=20)
         ctk.CTkButton(btn_frame, text="Сохранить", command=self.on_save).pack(side="left", padx=10)
         ctk.CTkButton(btn_frame, text="Отмена", command=self.destroy).pack(side="left", padx=10)
 
@@ -342,14 +348,14 @@ class SettingsWindow(ctk.CTkToplevel):
         if path:
             self.jar_path_var.set(path)
             self.config_data["jar_path"] = path
-            self.save_config()
+            self.save_callback(self.config_data)
 
     def choose_dir(self):
         folder = filedialog.askdirectory()
         if folder:
             self.dir_var.set(folder)
             self.config_data["output_dir"] = folder
-            self.save_config()
+            self.save_callback(self.config_data)
 
     def open_methodology_editor(self):
         MethodologyEditor(self, self.methodologies_dir, self.load_methodologies_callback)
@@ -379,8 +385,6 @@ class SettingsWindow(ctk.CTkToplevel):
                     pass
 
             save_path = PLANTUML_JAR_PATH
-            self.master.gen_button.configure(state="disabled")
-            self.master.progress.start()
             self.download_progress_var.set("0%")
 
             def reporthook(blocknum, blocksize, totalsize):
@@ -398,22 +402,18 @@ class SettingsWindow(ctk.CTkToplevel):
                     urllib.request.urlretrieve(PLANTUML_DOWNLOAD_URL, save_path, reporthook)
                     self.jar_path_var.set(str(save_path))
                     self.config_data["jar_path"] = str(save_path)
-                    self.save_config()
+                    self.save_callback(self.config_data)
                     self.download_progress_var.set("Скачивание завершено")
                     messagebox.showinfo("Успех", "plantuml.jar успешно скачан")
                 except Exception as e:
                     self.download_progress_var.set("")
                     messagebox.showerror("Ошибка", f"Не удалось скачать plantuml.jar: {e}")
                 finally:
-                    self.master.progress.stop()
-                    self.master.gen_button.configure(state="normal")
                     self.after(1000, lambda: self.download_progress_var.set(""))
 
             threading.Thread(target=download, daemon=True).start()
         except Exception as e:
             messagebox.showerror("Ошибка", f"Ошибка при скачивании: {e}")
-            self.master.progress.stop()
-            self.gen_button.configure(state="normal")
             self.download_progress_var.set("")
 
     def reset_settings(self):
@@ -427,7 +427,7 @@ class SettingsWindow(ctk.CTkToplevel):
         }
         self.config_data.clear()
         self.config_data.update(default_config)
-        self.save_config()
+        self.save_callback(self.config_data)
 
         self.jar_path_var.set(self.config_data["jar_path"])
         self.dir_var.set(self.config_data["output_dir"])
@@ -456,7 +456,7 @@ class SettingsWindow(ctk.CTkToplevel):
 class PlantUMLApp(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.title("PlantUML Generator с ChatGPT и SQLite")
+        self.title("PlantGPT")
         self.geometry("1200x820")
 
         ensure_dirs()
@@ -546,7 +546,8 @@ class PlantUMLApp(ctk.CTk):
         self.prompt_text.delete("0.0", "end")
 
     def open_settings(self):
-        SettingsWindow(self, self.config_data, self.on_settings_save, METHODOLOGIES_DIR, self.load_methodologies)
+        # Передаём функцию сохранения конфигурации в окно настроек
+        SettingsWindow(self, self.config_data, self.save_config, METHODOLOGIES_DIR, self.load_methodologies)
 
     def on_settings_save(self, new_config):
         self.config_data = new_config
@@ -560,8 +561,10 @@ class PlantUMLApp(ctk.CTk):
         except Exception:
             self.max_retries = 5
 
-    def save_config(self):
-        save_config(self.config_data)
+    def save_config(self, config=None):
+        if config is None:
+            config = self.config_data
+        save_config(config)
 
     def load_methodologies(self):
         try:
@@ -588,6 +591,11 @@ class PlantUMLApp(ctk.CTk):
         schemes = self.db.get_all_schemes()
         for sid, fname in schemes:
             self.scheme_listbox.insert("end", f"{sid}: {fname}")
+
+    # Остальной код без изменений (on_scheme_select, show_code, load_code_to_prompt,
+    # export_scheme_files, delete_selected_scheme, on_generate, worker_thread_retry,
+    # safe_update_fail_label, safe_log, safe_notify, safe_finish, safe_load_scheme_list,
+    # safe_show_preview, log, on_closing)
 
     def on_scheme_select(self, event):
         sel = self.scheme_listbox.curselection()
