@@ -75,7 +75,7 @@ python main.py
 4. **Configure the path to `plantuml.jar` via the "Settings" menu**
 If you don't have `plantuml.jar`, use the download button in the settings.
 
---
+---
 
 ## How to use
 
