@@ -1,4 +1,4 @@
-# PlantUML Generator with ChatGPT and SQLite
+# PlantUML Generator with ChatGPT
 
 ---
 
