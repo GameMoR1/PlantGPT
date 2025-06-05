@@ -1,6 +1,6 @@
 import customtkinter as ctk
 from tkinter import filedialog, messagebox
-import tkinter as tk  # Для Listbox и событий клавиатуры
+import tkinter as tk
 from PIL import Image, ImageTk
 import subprocess
 import os
@@ -13,9 +13,9 @@ import time
 from pathlib import Path
 from io import BytesIO
 
-from g4f import ChatCompletion  # pip install g4f
+from g4f import ChatCompletion
 
-# Настройка темы CustomTkinter
+# CustomTkinter
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
@@ -546,7 +546,6 @@ class PlantUMLApp(ctk.CTk):
         self.prompt_text.delete("0.0", "end")
 
     def open_settings(self):
-        # Передаём функцию сохранения конфигурации в окно настроек
         SettingsWindow(self, self.config_data, self.save_config, METHODOLOGIES_DIR, self.load_methodologies)
 
     def on_settings_save(self, new_config):
@@ -591,11 +590,6 @@ class PlantUMLApp(ctk.CTk):
         schemes = self.db.get_all_schemes()
         for sid, fname in schemes:
             self.scheme_listbox.insert("end", f"{sid}: {fname}")
-
-    # Остальной код без изменений (on_scheme_select, show_code, load_code_to_prompt,
-    # export_scheme_files, delete_selected_scheme, on_generate, worker_thread_retry,
-    # safe_update_fail_label, safe_log, safe_notify, safe_finish, safe_load_scheme_list,
-    # safe_show_preview, log, on_closing)
 
     def on_scheme_select(self, event):
         sel = self.scheme_listbox.curselection()
